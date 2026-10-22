@@ -16,6 +16,7 @@ var engineModule = (
     init: { |self, srv|
         self.server = srv ? Server.default;
         self.defineSynthDefs;
+        self.server.sync; // Espera a que los SynthDefs estén compilados y añadidos al servidor
         self.setupAudioGraph;
         self;
     },
@@ -181,10 +182,22 @@ var engineModule = (
     },
 
     cleanup: { |self|
-        self.masterSynth.free;
-        self.synthGroup.free;
-        self.fxGroup.free;
-        self.audioBus.free;
+        if(self.masterSynth.notNil) {
+            self.masterSynth.free;
+            self.masterSynth = nil;
+        };
+        if(self.synthGroup.notNil) {
+            self.synthGroup.free;
+            self.synthGroup = nil;
+        };
+        if(self.fxGroup.notNil) {
+            self.fxGroup.free;
+            self.fxGroup = nil;
+        };
+        if(self.audioBus.notNil) {
+            self.audioBus.free;
+            self.audioBus = nil;
+        };
     }
 );
 
