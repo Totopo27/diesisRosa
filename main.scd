@@ -32,6 +32,10 @@ s.waitForBoot({
     // Módulo de Presets FM
     ~diesisRosa.presets = (baseDir +/+ "modules/presets.scd").load;
     ~diesisRosa.presets.init(baseDir +/+ "presets/default_presets.scd");
+    // Carga de presets adicionales basados en Barry Truax
+    if(File.exists(baseDir +/+ "presets/truax_presets.scd")) {
+        ~diesisRosa.presets.loadBankFromFile(baseDir +/+ "presets/truax_presets.scd");
+    };
 
     // Módulo de Audio Engine (SynthDefs, Buses, Master Stage)
     ~diesisRosa.engine = (baseDir +/+ "modules/engine.scd").load;

@@ -49,7 +49,8 @@ var voiceManagerModule = (
     // Disparo de nota polifónica segura (Voice Safe)
     noteOn: { |self, noteNumber, velocity = 100, channel = 0|
         var voiceKey = (channel.asString ++ "_" ++ noteNumber.asString).asSymbol;
-        var freq, presetArgs, synthArgs, multOctave;
+        var fBase, fCarrier, presetDict, presetArgs, synthArgs, multOctave;
+        var cRatio, m1Ratio;
 
         // 1. Evitar Voice Leaks: si ya había una voz sonando en esta misma tecla/canal, cerrarla limpiamente
         if(self.activeVoices[voiceKey].notNil) {
@@ -57,23 +58,30 @@ var voiceManagerModule = (
             self.activeVoices[voiceKey] = nil;
         };
 
-        // 2. Cálculo de frecuencia con salvaguarda de rango de array
+        // 2. Cálculo de frecuencia fundamental microtonal
         if(noteNumber < self.currentScaleData.size) {
-            freq = self.currentScaleData.at(noteNumber);
+            fBase = self.currentScaleData.at(noteNumber);
         } {
-            freq = 440.0;
+            fBase = 440.0;
         };
 
         multOctave = 2.pow(self.octaveShift);
-        freq = (freq * multOctave).clip(15.0, 18000.0);
+        fBase = (fBase * multOctave).clip(15.0, 18000.0);
 
-        // 3. Preparar argumentos del sinte
+        // 3. Obtener el preset actual y calcular la frecuencia de portadora según Forma Normal de Truax
+        presetDict = self.presets.getPreset(self.currentPresetKey);
+        cRatio = (presetDict[\c] ? 1).asFloat;
+        m1Ratio = (presetDict[\m1] ? 1).asFloat;
+
+        // Si C:M no está en Forma Normal, compensamos fCarrier para que la fundamental escuchada sea fBase
+        fCarrier = self.engine.calcCarrierFreq(fBase, cRatio, m1Ratio);
+
         presetArgs = self.presets.asArgsArray(self.currentPresetKey);
 
         synthArgs = [
             \out, self.engine.audioBus,
             \gate, 1,
-            \f, freq,
+            \f, fCarrier,
             \amp, (velocity / 127.0).squared // Curva de velocidad musical
         ] ++ presetArgs;
 

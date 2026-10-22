@@ -25,11 +25,28 @@ Cada escala calcula un arreglo de 384 posiciones de frecuencia para responder a 
 
 Los timbres están definidos en diccionarios desacoplados según relaciones de portadora y moduladores ($C:M$):
 
+#### Timbres clásicos (`presets/default_presets.scd`)
 - `\fmBell`: Campana inarmónica con proporciones de Chowning ($1 : 1.414 : 3.5$) y caída exponencial de brillo.
 - `\fmBass`: Bajo sólido estilo TX81Z / LatelyBass con ataque percusivo rápido en el segundo modulador.
 - `\fmElectricPiano`: Timbre de piano electromecánico con modulador agudo transitorio emulando la barra metálica.
 - `\fmAtmospherePad`: Textura lenta con batimiento interno diseñada para acordes microtonales densos.
 - `\fmHardLead`: Espectro cortante basado en armónicos impares ($1 : 3 : 5$).
+
+#### Timbres de investigación acústica (`presets/truax_presets.scd`)
+Basados en las técnicas de Barry Truax (*Simon Fraser University* / *Handbook for Acoustic Ecology*):
+- `\truaxGong2_5`: Gong inarmónico con espaciamiento de bandas laterales asimétrico ($2C$ y $M-2C$).
+- `\truaxChime3_7`: Campana de vidrio en familia $3:7$ con componentes reflejados en contrafase.
+- `\truaxHollowReed`: Caña hueca basada en armónicos impares ($1:2$), balanceada para terceras puras en mesotónico o Centaur.
+- `\truaxFormantVocal`: Región formántica vocal usando el miembro desplazado $3:1$ de la familia armónica.
+- `\truaxWaterDroplet`: Modulación en la frontera de los 20 Hz, transitando entre pulso de gotas y tono continuo.
+
+### Preservación de la fundamental (Forma Normal de Truax)
+
+Cuando un ratio $C:M$ no cumple la condición de Forma Normal ($M \ge 2C$ o $1:1$), las bandas laterales inferiores se reflejan por debajo del valor nominal del carrier, cambiando la nota que el oído percibe. `engine.scd` incorpora el algoritmo de reducción de Truax:
+
+$$C_{\text{normal}} = |C - M|$$
+
+El gestor de voces recalcula la portadora necesaria ($f_{\text{carrier}} = \frac{f_{\text{base}} \cdot C}{C_{\text{normal}}}$) de modo que la frecuencia fundamental escuchada coincida siempre con el grado exacto de la escala microtonal activa.
 
 ---
 

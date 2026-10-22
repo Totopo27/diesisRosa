@@ -2,6 +2,8 @@
     SCMicroSynth - Module: Engine
     Define los SynthDefs del sintetizador (\fm, \sync, \masterLimiter),
     gestiona buses de audio privados y grupos de ejecución.
+    Incorpora la teoría de Forma Normal (N.F.) de Barry Truax para
+    preservar la frecuencia fundamental acústica ante cualquier ratio C:M.
 */
 
 var engineModule = (
@@ -18,8 +20,41 @@ var engineModule = (
         self;
     },
 
+    /*
+        Función matemática de Forma Normal de Barry Truax:
+        Para un ratio C:M, verifica si el Carrier es la fundamental percibida (M >= 2C o 1:1).
+        Si no está en Forma Normal, aplica reducciones sucesivas: C = |C - M| hasta alcanzarla.
+        Retorna [normalC, normalM].
+    */
+    toNormalForm: { |self, c = 1, m = 1|
+        var curC = c.abs.max(0.001);
+        var curM = m.abs.max(0.001);
+        var iterations = 0;
+
+        // Caso base 1:1 o M >= 2C
+        while {
+            (curC != curM) and: { curM < (2 * curC) } and: { iterations < 20 }
+        } {
+            curC = (curC - curM).abs;
+            iterations = iterations + 1;
+        };
+
+        [curC, curM];
+    },
+
+    /*
+        Calcula la frecuencia del carrier necesaria para que la nota fundamental
+        escuchada coincida exactamente con la afinación microtonal requerida (f).
+        Fórmula de Truax: fCarrier = (fFundamental * C) / NormalFormC
+    */
+    calcCarrierFreq: { |self, fFundamental = 220.0, c = 1, m = 1|
+        var nf = self.toNormalForm(c, m);
+        var normalC = nf[0];
+        (fFundamental * c) / normalC;
+    },
+
     defineSynthDefs: { |self|
-        // 1. Motor FM de 2 moduladores en cascada
+        // 1. Motor FM de 2 moduladores en cascada con preservación de fundamental
         SynthDef(\fmVoice, {
             arg out = 0, amp = 1.0, gate = 1,
             f = 220, det = 1,
