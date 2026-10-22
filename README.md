@@ -1,78 +1,90 @@
-# diesisRosa v2.0 - Sintetizador Microtonal Modular en SuperCollider
+# diesisRosa
 
-Arquitectura modular para SuperCollider inspirada en principios de diseño de software (*Deep Modules*), desacoplada en submódulos funcionales y preparada para experimentación microtonal avanzada y síntesis FM.
-
----
-
-## 🎹 Características Principales
-
-- **10 Afinaciones y Temperamentos Microtonales:**
-  - `tet31`, `tet41`, `tet53`: Temperamentos iguales de alta resolución.
-  - `tet12`: Temperamento igual estándar.
-  - `pitag53`: Afinación pitagórica encajada en 53-EDO (cálculo por quintas/cuartas y normalización de octava).
-  - `meantone31`: Mesotónico de 1/4 de comma en 31-EDO.
-  - `magic41`: Temperamento Mágico en 41-EDO con generador 3^(1/5).
-  - `partch`: Ratios de justa entonación de Harry Partch (43 tonos).
-  - `dalessandro`: Escala de Erv Wilson con base en Do4 = 256 Hz.
-  - `centaur`: Escala Centaur de Kraig Grady (12 tonos, justa entonación límite 7).
-- **Banco de Presets FM:**
-  - `fmBell`: Campana tubular inarmónica clásica.
-  - `fmBass`: Bajo sólido con pegada estilo LatelyBass (TX81Z / DX100).
-  - `fmElectricPiano`: Piano eléctrico FM cálido y dinámico.
-  - `fmAtmospherePad`: Textura envolvente para drones microtonales.
-  - `fmHardLead`: Lead punzante y brillante.
-- **Gestión de Recursos Robusta:**
-  - Libre de *Voice Leaks* (seguimiento de nodos por canal y nota).
-  - Etapa master con limitador integrado (`Limiter.ar`) para evitar distorsiones digitales.
-  - Arranque sincronizado con `s.waitForBoot`.
-  - Mapeo unificado para 3 canales MIDI (hasta 384 notas microtonales simultáneas) y mensajes OSC (`/mnote`, `/param/scale`, etc.).
+Sintetizador microtonal modular programado en SuperCollider. Combina afinaciones históricas y experimentales con un motor de modulación en frecuencia (FM) de tres operadores en cascada y control por MIDI y OSC.
 
 ---
 
-## 📁 Estructura del Proyecto
+## Qué hace
+
+El proyecto nació para superar la restricción de los doce semitonos del teclado convencional sin perder la estabilidad del sintetizador en vivo. En lugar de un archivo único con variables globales y disparadores manuales, el código corre dividido en módulos independientes: motor de audio, tablas de cálculo de afinación, banco de timbres, gestor de polifonía y receptores de control.
+
+### Afinaciones disponibles
+
+Cada escala calcula un arreglo de 384 posiciones de frecuencia para responder a tres canales MIDI contiguos (hasta 384 teclas mapeadas sin saltos):
+
+- **tet12**: Temperamento igual estándar de 12 divisiones.
+- **tet31, tet41, tet53**: Temperamentos iguales extendidos.
+- **pitag53**: Escala pitagórica construida mediante 26 quintas y 26 cuartas acomodadas dentro de 53-EDO, con normalización de octava.
+- **meantone31**: Mesotónico de un cuarto de coma (Aron) organizado en 31-EDO.
+- **magic41**: Temperamento Mágico en 41 notas por ciclo usando el generador $3^{1/5}$.
+- **partch**: Sistema de 43 tonos en justa entonación de Harry Partch con frecuencia base en Sol 0 (24.5 Hz).
+- **dalessandro**: Afinación de Erv Wilson construida sobre Do 4 = 256 Hz.
+- **centaur**: Escala de 12 grados de Kraig Grady en justa entonación (límite 7).
+
+### Banco de sonido FM
+
+Los timbres están definidos en diccionarios desacoplados según relaciones de portadora y moduladores ($C:M$):
+
+- `\fmBell`: Campana inarmónica con proporciones de Chowning ($1 : 1.414 : 3.5$) y caída exponencial de brillo.
+- `\fmBass`: Bajo sólido estilo TX81Z / LatelyBass con ataque percusivo rápido en el segundo modulador.
+- `\fmElectricPiano`: Timbre de piano electromecánico con modulador agudo transitorio emulando la barra metálica.
+- `\fmAtmospherePad`: Textura lenta con batimiento interno diseñada para acordes microtonales densos.
+- `\fmHardLead`: Espectro cortante basado en armónicos impares ($1 : 3 : 5$).
+
+---
+
+## Estructura
 
 ```text
 diesisRosa/
-├── main.scd                 # Punto de entrada principal y orquestador
+├── main.scd                 # Arranque sincronizado con s.waitForBoot
 ├── modules/
-│   ├── engine.scd           # SynthDefs (\fmVoice, \masterStage), Buses y Grupos
-│   ├── tunings.scd          # Catálogo matemático de afinaciones microtonales
-│   ├── presets.scd          # Administrador del banco de presets FM
-│   ├── voice_manager.scd    # Asignación polifónica segura y gestión de pánico
-│   └── midi_osc.scd         # Controladores desacoplados de MIDI y OSC
+│   ├── engine.scd           # SynthDefs (\fmVoice, \masterStage), buses y limitador
+│   ├── tunings.scd          # Fórmulas y arreglos de las 10 afinaciones
+│   ├── presets.scd          # Carga y serialización de timbres FM
+│   ├── voice_manager.scd    # Polifonía protegida contra notas colgadas
+│   └── midi_osc.scd         # Enrutamiento de mensajes MIDI (ch 1, 2, 3) y OSC
 ├── presets/
-│   └── default_presets.scd  # Diccionario persistente de timbres FM
-├── origen/                  # Script monolítico original v1.0 de referencia
-└── AUDIT_AND_DESIGN.md      # Reporte detallado de la auditoría técnica
+│   └── default_presets.scd  # Definición de parámetros tímbricos
+├── origen/                  # Script inicial de referencia
+└── AUDIT_AND_DESIGN.md      # Diagnóstico técnico de la refactorización
 ```
 
 ---
 
-## 🚀 Uso Rápido en SuperCollider
+## Cómo usarlo
 
-1. Abre SuperCollider IDE.
-2. Abre el archivo `main.scd`.
-3. Ejecuta todo el bloque con `Ctrl + Enter` (Windows/Linux) o `Cmd + Enter` (macOS).
-4. El servidor se iniciará, compilará los SynthDefs y enlazará MIDI y OSC automáticamente.
+1. Abrí `main.scd` en SuperCollider IDE.
+2. Ejecutá el bloque principal (`Ctrl+Enter` en Windows/Linux o `Cmd+Enter` en macOS).
+3. El servidor arrancará, compilará los sintetizadores y enlazará las entradas MIDI y OSC en el puerto `57120`.
 
-### Comandos de Control en Vivo
+### Control en tiempo real
 
 ```supercollider
-// Cambiar de preset FM
-~diesisRosa.setPreset(\fmBass);
+// Cambiar el timbre activo
 ~diesisRosa.setPreset(\fmElectricPiano);
+~diesisRosa.setPreset(\fmAtmospherePad);
 
-// Cambiar de afinación microtonal
-~diesisRosa.setTuning(\partch);
+// Cambiar el sistema de afinación
 ~diesisRosa.setTuning(\dalessandro);
 ~diesisRosa.setTuning(\tet31);
+~diesisRosa.setTuning(\partch);
 
-// Ajustar volumen master
-~diesisRosa.setMasterVolume(0.3);
+// Ajustar el nivel general de salida
+~diesisRosa.setMasterVolume(0.2);
 
-// Pánico (liberar notas colgadas)
+// Pánico suave (envía gate 0 a todas las voces activas)
 ~diesisRosa.panic;
 
-// Limpieza total de recursos
+// Apagar el sintetizador y liberar grupos, buses y listeners
 ~diesisRosa.cleanup;
 ```
+
+### Mensajes OSC admitidos
+
+- `/mnote [nota, velocidad]`: Dispara o libera una voz.
+- `/param/a/octave [entero]`: Transpone por octavas hacia arriba o hacia abajo.
+- `/param/scale [nombre]`: Cambia la afinación activa (ej. `\tet41`).
+- `/param/preset [nombre]`: Cambia el sonido activo (ej. `\fmBass`).
+- `/allnotesoff`: Pánico suave respetando la curva de release.
+- `/allsoundoff`: Pánico duro que destruye los nodos al instante.
