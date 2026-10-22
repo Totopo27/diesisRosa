@@ -40,6 +40,14 @@ Basados en las técnicas de Barry Truax (*Simon Fraser University* / *Handbook f
 - `\truaxFormantVocal`: Región formántica vocal usando el miembro desplazado $3:1$ de la familia armónica.
 - `\truaxWaterDroplet`: Modulación en la frontera de los 20 Hz, transitando entre pulso de gotas y tono continuo.
 
+#### Módulo y parches Yamaha DX7 (`modules/dx7.scd` y `presets/dx7_presets.scd`)
+Basado en *Chowning & Bristow (1986)* y el proyecto *DX7-Supercollider*. Integra los 32 algoritmos de modulación canónicos de 6 operadores adaptados a escalas microtonales:
+- `\dx7EPIANO`: Recreación del sonido icónico E.PIANO 1 (ROM 1A) con ataque metálico en armónico 14x.
+- `\dx7BASS1`: Bajo seco percusivo clásico del DX7.
+- `\dx7TUBBELLS`: Campanas tubulares sinfónicas con batimiento inarmónico.
+- `\dx7MARIMBA`: Percusión de mazo de madera con decaimiento rápido.
+- `\dx7BRASS1`: Sección de metales ochentera brillante.
+
 ### Preservación de la fundamental (Forma Normal de Truax)
 
 Cuando un ratio $C:M$ no cumple la condición de Forma Normal ($M \ge 2C$ o $1:1$), las bandas laterales inferiores se reflejan por debajo del valor nominal del carrier, cambiando la nota que el oído percibe. `engine.scd` incorpora el algoritmo de reducción de Truax:

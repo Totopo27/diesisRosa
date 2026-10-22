@@ -36,6 +36,13 @@ s.waitForBoot({
     if(File.exists(baseDir +/+ "presets/truax_presets.scd")) {
         ~diesisRosa.presets.loadBankFromFile(baseDir +/+ "presets/truax_presets.scd");
     };
+    // Carga de presets canónicos del Yamaha DX7
+    if(File.exists(baseDir +/+ "presets/dx7_presets.scd")) {
+        ~diesisRosa.presets.loadBankFromFile(baseDir +/+ "presets/dx7_presets.scd");
+    };
+
+    // Módulo DX7 (32 Algoritmos y conversión de envolventes de 6 operadores)
+    ~diesisRosa.dx7 = (baseDir +/+ "modules/dx7.scd").load;
 
     // Módulo de Audio Engine (SynthDefs, Buses, Master Stage)
     ~diesisRosa.engine = (baseDir +/+ "modules/engine.scd").load;
