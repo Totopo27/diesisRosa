@@ -41,6 +41,11 @@ s.waitForBoot({
         ~diesisRosa.presets.loadBankFromFile(baseDir +/+ "presets/dx7_presets.scd");
     };
 
+    // Carga opcional de presets definidos por el usuario
+    if(File.exists(baseDir +/+ "presets/user_presets.scd")) {
+        ~diesisRosa.presets.loadBankFromFile(baseDir +/+ "presets/user_presets.scd");
+    };
+
     // Módulo DX7 (32 Algoritmos y conversión de envolventes de 6 operadores)
     ~diesisRosa.dx7 = (baseDir +/+ "modules/dx7.scd").load;
 
